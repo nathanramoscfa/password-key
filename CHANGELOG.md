@@ -8,6 +8,15 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **Win32 clipboard: `SetClipboardData` return value was truncated to 32
+  bits.** No `restype` was declared, so ctypes converted the returned
+  64-bit `HANDLE` through the default 32-bit `int`. A valid handle whose
+  low 32 bits happened to be zero would read as failure, and the error
+  path would then `GlobalFree` memory the clipboard already owned — a
+  use-after-free surfacing in later pastes. Correct prototypes are now
+  declared for `SetClipboardData`, `GlobalAlloc`, and `GlobalFree`, with
+  protocol-level regression tests that reproduce ctypes' conversion
+  semantics.
 - **GitHub Actions are now pinned to full commit SHAs** instead of mutable
   tags, and checkout steps no longer persist git credentials. A moved or
   compromised tag on a third-party action could previously change the code

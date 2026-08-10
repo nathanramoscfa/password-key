@@ -43,10 +43,17 @@ def _win_copy(text: str) -> bool:
     user32 = ctypes.windll.user32
 
     kernel32.GlobalAlloc.restype = wintypes.HGLOBAL
+    kernel32.GlobalAlloc.argtypes = [wintypes.UINT, ctypes.c_size_t]
     kernel32.GlobalLock.restype = wintypes.LPVOID
     kernel32.GlobalLock.argtypes = [wintypes.HGLOBAL]
     kernel32.GlobalUnlock.argtypes = [wintypes.HGLOBAL]
+    kernel32.GlobalFree.argtypes = [wintypes.HGLOBAL]
     user32.SetClipboardData.argtypes = [wintypes.UINT, wintypes.HANDLE]
+    # SetClipboardData returns a HANDLE. Without an explicit restype,
+    # ctypes truncates the 64-bit return to a 32-bit int; a valid handle
+    # whose low 32 bits are zero would then read as failure, and the
+    # GlobalFree below would free memory the clipboard already owns.
+    user32.SetClipboardData.restype = wintypes.HANDLE
 
     if not _win_open_clipboard(user32):
         return False
