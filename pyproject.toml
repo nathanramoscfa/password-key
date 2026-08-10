@@ -11,7 +11,7 @@ license = "MIT"
 license-files = ["LICENSE"]
 requires-python = ">=3.9"
 authors = [
-    { name = "Nathan Ramos", email = "nathan.ramos.github@gmail.com" },
+    { name = "ArcForge Digital Labs LLC" },
 ]
 keywords = [
     "password",
@@ -51,6 +51,7 @@ Homepage = "https://github.com/nathanramoscfa/password-key"
 Repository = "https://github.com/nathanramoscfa/password-key"
 Issues = "https://github.com/nathanramoscfa/password-key/issues"
 Changelog = "https://github.com/nathanramoscfa/password-key/blob/main/CHANGELOG.md"
+Publisher = "https://arcforgelabs.dev"
 
 [project.scripts]
 password-key = "password_key.cli:main"
