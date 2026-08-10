@@ -4,7 +4,17 @@ All notable changes to this project are documented here. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.1.0] - 2026-08-10
+
+First release published to PyPI. Incorporates the results of a full
+security audit of 1.0.0 (which was tagged on GitHub but never reached
+PyPI).
+
+### Added
+
+- `entropy_bits_all_classes(charset, length)`: exact entropy of the
+  accepted set under `require_all_classes` rejection sampling, via
+  inclusion-exclusion. Exported from the package root.
 
 ### Security
 
@@ -92,4 +102,5 @@ rewrite of the same design.
 - Standalone PowerShell implementation preserved in
   `contrib/new-password.ps1` for machines without Python.
 
+[1.1.0]: https://github.com/nathanramoscfa/password-key/releases/tag/v1.1.0
 [1.0.0]: https://github.com/nathanramoscfa/password-key/releases/tag/v1.0.0
