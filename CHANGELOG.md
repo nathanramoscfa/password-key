@@ -8,6 +8,11 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **The bundled EFF wordlist is now integrity-checked in CI** against the
+  SHA-256 of the canonical list published by the EFF (verified
+  byte-identical during this audit), and a test asserts the list is
+  prefix-free, so passphrases stay uniquely decodable — and the entropy
+  figure honest — under any separator, including an empty one.
 - **`--full` overstated entropy at short lengths.** The class guarantee
   works by rejection sampling, so the output is uniform over a smaller
   set than charset^length, but the panel reported the unconstrained

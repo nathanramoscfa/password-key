@@ -1,5 +1,8 @@
 """Tests for password_key.passphrase."""
 
+import hashlib
+from importlib import resources
+
 import pytest
 
 from password_key.passphrase import (
@@ -27,6 +30,32 @@ class TestWordlist:
 
     def test_cached(self):
         assert load_wordlist() is load_wordlist()
+
+    def test_matches_canonical_eff_wordlist(self):
+        # SHA-256 of https://www.eff.org/files/2016/07/18/eff_large_wordlist.txt
+        # A silently modified wordlist would skew every passphrase drawn
+        # from it; entropy claims are only valid for the canonical list.
+        # CRLF is normalized so checkout line-ending translation cannot
+        # produce a false alarm.
+        data = (
+            resources.files("password_key")
+            .joinpath("data/eff_large_wordlist.txt")
+            .read_bytes()
+        )
+        digest = hashlib.sha256(data.replace(b"\r\n", b"\n")).hexdigest()
+        assert (
+            digest
+            == "addd35536511597a02fa0a9ff1e5284677b8883b83e986e43f15a3db996b903e"
+        )
+
+    def test_prefix_free(self):
+        # No word is a prefix of another, so even separator="" keeps a
+        # passphrase uniquely decodable and the entropy figure honest.
+        words = sorted(load_wordlist())
+        for shorter, longer in zip(words, words[1:]):
+            assert not longer.startswith(shorter), (
+                f"{shorter!r} is a prefix of {longer!r}"
+            )
 
 
 def _rejoins_into_n_words(phrase: str, sep: str, n: int) -> bool:
