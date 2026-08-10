@@ -8,6 +8,12 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **`--print` appended an invisible `\r` on Windows.** Text-mode stdout
+  translates `\n` to `\r\n` when piped, so
+  `DB_PASSWORD=$(password-key --print)` captured the password plus a
+  trailing carriage return — the same invisible-character bug class as
+  `clip.exe` appending a newline. Script mode now writes `\n` only, on
+  every platform, verified by a raw-bytes subprocess test.
 - **The bundled EFF wordlist is now integrity-checked in CI** against the
   SHA-256 of the canonical list published by the EFF (verified
   byte-identical during this audit), and a test asserts the list is

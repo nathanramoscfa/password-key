@@ -1,6 +1,10 @@
 """Tests for the password-key CLI."""
 
+import os
 import string
+import subprocess
+import sys
+from pathlib import Path
 
 import pytest
 
@@ -118,6 +122,23 @@ class TestScriptMode:
         captured = capsys.readouterr()
         assert len(captured.out.strip().splitlines()) == 3
         assert "clipboard" in captured.err
+
+    def test_print_emits_no_carriage_return(self):
+        # Raw bytes from a real pipe: on Windows, text-mode stdout would
+        # append \r, and $(password-key --print) would capture
+        # "password\r" - an invisible character in the stored secret.
+        env = dict(os.environ)
+        env["PYTHONPATH"] = str(Path(__file__).resolve().parent.parent / "src")
+        result = subprocess.run(
+            [sys.executable, "-m", "password_key", "--print"],
+            capture_output=True,
+            env=env,
+            timeout=30,
+        )
+        assert result.returncode == 0
+        assert b"\r" not in result.stdout
+        assert result.stdout.endswith(b"\n")
+        assert len(result.stdout) == 33  # 32 chars + exactly one \n
 
 
 class TestClipboardFallback:

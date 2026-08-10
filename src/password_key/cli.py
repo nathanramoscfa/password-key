@@ -14,6 +14,7 @@ Design rules, in priority order:
 from __future__ import annotations
 
 import argparse
+import contextlib
 import os
 import sys
 import time
@@ -40,7 +41,6 @@ def _enable_windows_vt() -> None:
 
     Purely cosmetic — on failure the CLI simply runs without color.
     """
-    import contextlib
     import ctypes
 
     with contextlib.suppress(Exception):
@@ -402,6 +402,11 @@ def main(argv: list[str] | None = None) -> int:
 
     if args.print_only or args.count > 1:
         # Script mode: bare secrets on stdout, one per line, nothing else.
+        # On Windows, text-mode stdout turns \n into \r\n when piped, and
+        # $(password-key --print) would capture a trailing invisible \r -
+        # the same bug class as clip.exe appending a newline.
+        with contextlib.suppress(AttributeError, ValueError, OSError):
+            sys.stdout.reconfigure(newline="\n")
         for secret, _, _ in results:
             print(secret)
         if args.count > 1 and not args.print_only:
