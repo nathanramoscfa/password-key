@@ -29,14 +29,40 @@ class TestWordlist:
         assert load_wordlist() is load_wordlist()
 
 
+def _rejoins_into_n_words(phrase: str, sep: str, n: int) -> bool:
+    """True if ``phrase`` decomposes into exactly ``n`` wordlist words.
+
+    Four EFF words contain a hyphen themselves (drop-down, felt-tip,
+    t-shirt, yo-yo), so with the default ``-`` separator a naive split
+    can cut a word in half; try every way of re-joining the pieces.
+    """
+    wordset = set(load_wordlist())
+    parts = phrase.split(sep)
+
+    def walk(i: int, remaining: int) -> bool:
+        if i == len(parts):
+            return remaining == 0
+        if remaining == 0:
+            return False
+        candidate = ""
+        for j in range(i, len(parts)):
+            candidate = parts[i] if j == i else candidate + sep + parts[j]
+            if candidate in wordset and walk(j + 1, remaining - 1):
+                return True
+        return False
+
+    return walk(0, n)
+
+
 class TestGeneratePassphrase:
     def test_default_six_words(self):
         phrase = generate_passphrase()
-        assert len(phrase.split("-")) == 6
+        assert _rejoins_into_n_words(phrase, "-", 6)
 
     def test_words_come_from_the_list(self):
+        # Space never appears in a word, so splitting on it is exact.
         wordlist = set(load_wordlist())
-        for word in generate_passphrase(8).split("-"):
+        for word in generate_passphrase(8, separator=" ").split(" "):
             assert word in wordlist
 
     def test_separator(self):
@@ -44,8 +70,14 @@ class TestGeneratePassphrase:
         assert len(phrase.split(" ")) == 4
 
     def test_capitalize(self):
-        for word in generate_passphrase(6, capitalize=True).split("-"):
+        for word in generate_passphrase(6, separator=" ", capitalize=True).split(" "):
             assert word[0].isupper()
+
+    def test_hyphenated_words_survive_default_separator(self):
+        # Regression: these tests once split naively on "-" and failed
+        # ~1% of runs, whenever a hyphenated word was drawn.
+        assert _rejoins_into_n_words("t-shirt-abacus-yo-yo", "-", 3)
+        assert not _rejoins_into_n_words("t-shirt-abacus-yo-yo", "-", 4)
 
     def test_uniqueness(self):
         # 100 six-word phrases colliding would mean a broken RNG.
