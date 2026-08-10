@@ -6,6 +6,14 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Security
+
+- **GitHub Actions are now pinned to full commit SHAs** instead of mutable
+  tags, and checkout steps no longer persist git credentials. A moved or
+  compromised tag on a third-party action could previously change the code
+  running inside the workflow that holds the PyPI trusted-publishing
+  identity.
+
 ### Fixed
 
 - **CLI could crash with `UnicodeEncodeError` on Windows.** Output
