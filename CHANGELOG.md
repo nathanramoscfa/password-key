@@ -4,6 +4,22 @@ All notable changes to this project are documented here. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Fixed
+
+- **CLI could crash with `UnicodeEncodeError` on Windows.** Output
+  contained a few non-ASCII characters (em dash, `≈`). When stdout is
+  redirected, Python encodes with the locale code page, and cp437/cp850 —
+  still the default on many Windows systems — cannot represent them, so
+  the tool crashed at the moment it printed the result. All terminal
+  output is now pure ASCII, enforced by a regression test.
+- **Double-click launcher closed its window too fast.** `New Password.bat`
+  now detects launch-by-double-click and pauses before exiting, so the
+  result stays on screen. It also verifies the package is actually present
+  before using the repo checkout, and explains how to install the full
+  version when it falls back to the PowerShell generator.
+
 ## [1.0.0] - 2026-08-10
 
 First public release. `password-key` began as an internal PowerShell script

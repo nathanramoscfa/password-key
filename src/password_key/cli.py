@@ -115,7 +115,7 @@ def build_parser() -> argparse.ArgumentParser:
         type=int,
         metavar="N",
         help="generate a diceware passphrase of N words from the EFF Large "
-        "Wordlist instead of a character password (6 words ≈ 77 bits)",
+        "Wordlist instead of a character password (6 words is ~77 bits)",
     )
     parser.add_argument(
         "--separator",
@@ -149,7 +149,7 @@ def build_parser() -> argparse.ArgumentParser:
         dest="print_only",
         action="store_true",
         help="write the bare password to stdout and skip the clipboard "
-        "entirely — for piping into other tools",
+        "entirely - for piping into other tools",
     )
     parser.add_argument(
         "--clear",
@@ -202,9 +202,9 @@ def _generate_one(args) -> tuple[str, float, str]:
     )
     bits = generator.entropy_bits(size, args.length)
     if args.full:
-        desc = "full punctuation — NOT safe in a DSN without percent-encoding"
+        desc = "full punctuation: NOT safe in a DSN without percent-encoding"
     else:
-        desc = "URL-safe (letters, digits, - _ . ~) — safe anywhere"
+        desc = "URL-safe (letters, digits, - _ . ~): safe anywhere"
     return secret, bits, desc
 
 
@@ -243,7 +243,7 @@ def _print_panel(secret: str, bits: float, desc: str, args, style: _Style) -> No
             print("  something harmless to clear the clipboard.", file=err)
     else:
         print(
-            f"  Clipboard : {style.yellow}unavailable — showing it instead"
+            f"  Clipboard : {style.yellow}unavailable - showing it instead"
             f"{style.reset}",
             file=err,
         )
@@ -278,7 +278,7 @@ def _countdown_clear(secret: str, seconds: int, style: _Style) -> None:
         print(f"\r{' ' * 60}\r  Clipboard cleared.", file=err)
     else:
         print(
-            f"\r{' ' * 60}\r  Clipboard left alone — it no longer held the password.",
+            f"\r{' ' * 60}\r  Clipboard left alone - it no longer held the password.",
             file=err,
         )
 

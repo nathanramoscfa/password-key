@@ -159,3 +159,53 @@ class TestParser:
     def test_zero_values_rejected(self, argv, fake_clipboard):
         with pytest.raises(SystemExit):
             main(argv)
+
+
+def _assert_ascii(text, label):
+    bad = sorted({ch for ch in text if ord(ch) > 127})
+    assert not bad, f"non-ASCII character(s) in {label}: {bad}"
+
+
+class TestAsciiOutput:
+    """Every byte the CLI prints must be ASCII.
+
+    On Windows, redirected output is encoded with the locale code page.
+    cp437 and cp850 - still the default on plenty of machines - cannot
+    represent an em dash, so a single stray one turns printing the
+    result into a UnicodeEncodeError crash.
+    """
+
+    def test_help_is_ascii(self):
+        _assert_ascii(build_parser().format_help(), "--help output")
+
+    def test_menu_is_ascii(self):
+        from password_key.cli import _MENU
+
+        _assert_ascii(_MENU.format(version=__version__), "interactive menu")
+
+    @pytest.mark.parametrize(
+        "argv",
+        [
+            [],
+            ["--full"],
+            ["--words", "6"],
+            ["--show"],
+            ["--no-ambiguous"],
+            ["--print"],
+            ["--count", "3"],
+        ],
+    )
+    def test_output_is_ascii(self, argv, fake_clipboard, capsys):
+        main(argv)
+        captured = capsys.readouterr()
+        _assert_ascii(captured.out, f"stdout for {argv}")
+        _assert_ascii(captured.err, f"stderr for {argv}")
+
+    def test_clipboard_failure_panel_is_ascii(self, broken_clipboard, capsys):
+        main([])
+        _assert_ascii(capsys.readouterr().err, "clipboard-failure panel")
+
+    def test_auto_clear_messages_are_ascii(self, fake_clipboard, capsys, monkeypatch):
+        monkeypatch.setattr("password_key.cli.time.sleep", lambda s: None)
+        main(["--clear", "2"])
+        _assert_ascii(capsys.readouterr().err, "auto-clear countdown")
