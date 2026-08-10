@@ -1,0 +1,50 @@
+# Publishes to PyPI via trusted publishing (OIDC) — no API token stored
+# anywhere. Runs when a GitHub release is published.
+#
+# One-time setup on PyPI (Account → Publishing → Add a pending publisher):
+#   PyPI project name : password-key
+#   Owner             : nathanramoscfa
+#   Repository        : password-key
+#   Workflow name     : publish.yml
+#   Environment       : pypi
+
+name: Publish to PyPI
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install build twine
+      - run: python -m build
+      - run: twine check dist/*
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/password-key/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

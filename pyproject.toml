@@ -1,0 +1,98 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "password-key"
+dynamic = ["version"]
+description = "Cryptographically secure passwords that are safe to paste anywhere — URL-safe by default, clipboard-first, zero dependencies."
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.9"
+authors = [
+    { name = "Nathan Ramos", email = "nathan.ramos.github@gmail.com" },
+]
+keywords = [
+    "password",
+    "password-generator",
+    "passphrase",
+    "diceware",
+    "security",
+    "secrets",
+    "clipboard",
+    "cli",
+    "url-safe",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: System Administrators",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Security :: Cryptography",
+    "Topic :: Utilities",
+    "Typing :: Typed",
+]
+# Zero runtime dependencies, on purpose: a tool that generates secrets
+# should have the smallest possible supply-chain surface.
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/nathanramoscfa/password-key"
+Repository = "https://github.com/nathanramoscfa/password-key"
+Issues = "https://github.com/nathanramoscfa/password-key/issues"
+Changelog = "https://github.com/nathanramoscfa/password-key/blob/main/CHANGELOG.md"
+
+[project.scripts]
+password-key = "password_key.cli:main"
+pwk = "password_key.cli:main"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0",
+    "ruff>=0.4",
+]
+
+[tool.hatch.version]
+path = "src/password_key/__init__.py"
+
+[tool.hatch.build.targets.sdist]
+include = ["src", "tests", "README.md", "LICENSE", "CHANGELOG.md"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/password_key"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 88
+target-version = "py39"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = [
+    "E", "F", "W",    # pycodestyle + pyflakes
+    "I",              # isort
+    "B",              # bugbear
+    "UP",             # pyupgrade
+    "S",              # bandit (security)
+    "RUF",
+]
+ignore = [
+    "S101",  # assert is fine in tests
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S", "E501"]
+"src/password_key/clipboard.py" = ["S603"]  # fixed argv, no shell, no user input
