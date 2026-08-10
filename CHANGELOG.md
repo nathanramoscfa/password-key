@@ -8,6 +8,14 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Security
 
+- **`--full` overstated entropy at short lengths.** The class guarantee
+  works by rejection sampling, so the output is uniform over a smaller
+  set than charset^length, but the panel reported the unconstrained
+  figure (e.g. ~25 bits at `--full --length 4`; the honest number is
+  ~22). The CLI now reports `log2` of the accepted-string count,
+  computed exactly by inclusion-exclusion; the difference at the default
+  32 characters is ~0.03 bits. New public helper:
+  `entropy_bits_all_classes(charset, length)`.
 - **Win32 clipboard: `SetClipboardData` return value was truncated to 32
   bits.** No `restype` was declared, so ctypes converted the returned
   64-bit `HANDLE` through the default 32-bit `int`. A valid handle whose

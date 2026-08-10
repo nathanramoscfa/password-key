@@ -61,6 +61,16 @@ class TestOptions:
         assert any(not c.isalnum() for c in secret)
         assert "percent-encode" in capsys.readouterr().err
 
+    def test_full_reports_honest_entropy_at_short_length(self, fake_clipboard, capsys):
+        # --full rejects passwords missing a class, so the accepted set
+        # at length 4 is ~22 bits, not the naive log2(89)*4 ~= 25.9.
+        main(["--full", "--length", "4"])
+        err = capsys.readouterr().err
+        expected = int(generator.entropy_bits_all_classes(generator.FULL, 4))
+        assert expected == 22
+        assert f"~{expected} bits" in err
+        assert "~25 bits" not in err
+
     def test_no_ambiguous(self, fake_clipboard):
         main(["--no-ambiguous", "--length", "256"])
         assert not set(fake_clipboard["value"]) & set(generator.AMBIGUOUS)

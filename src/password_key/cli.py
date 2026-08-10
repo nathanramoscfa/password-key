@@ -197,10 +197,15 @@ def _generate_one(args) -> tuple[str, float, str]:
         exclude_ambiguous=args.no_ambiguous,
         require_all_classes=args.full,
     )
-    size = len(charset) - (
-        sum(c in charset for c in generator.AMBIGUOUS) if args.no_ambiguous else 0
-    )
-    bits = generator.entropy_bits(size, args.length)
+    effective = charset
+    if args.no_ambiguous:
+        effective = "".join(ch for ch in charset if ch not in generator.AMBIGUOUS)
+    if args.full:
+        # --full rejects passwords missing a class, so the accepted set
+        # is smaller than charset**length; report its exact entropy.
+        bits = generator.entropy_bits_all_classes(effective, args.length)
+    else:
+        bits = generator.entropy_bits(len(effective), args.length)
     if args.full:
         desc = "full punctuation: NOT safe in a DSN without percent-encoding"
     else:

@@ -15,6 +15,7 @@ from .generator import (
     FULL,
     URL_SAFE,
     entropy_bits,
+    entropy_bits_all_classes,
     generate,
     strength_label,
 )
@@ -28,6 +29,7 @@ __all__ = [
     "URL_SAFE",
     "__version__",
     "entropy_bits",
+    "entropy_bits_all_classes",
     "generate",
     "generate_passphrase",
     "load_wordlist",

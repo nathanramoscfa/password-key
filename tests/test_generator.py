@@ -11,6 +11,7 @@ from password_key.generator import (
     FULL,
     URL_SAFE,
     entropy_bits,
+    entropy_bits_all_classes,
     generate,
     strength_label,
 )
@@ -126,6 +127,54 @@ class TestEntropy:
 
     def test_matches_math(self):
         assert entropy_bits(94, 20) == pytest.approx(math.log2(94) * 20)
+
+
+class TestEntropyAllClasses:
+    def test_matches_brute_force_enumeration(self):
+        # Two chars per class over four classes, length 4: count the
+        # accepted strings directly and compare.
+        from itertools import product
+
+        charset = "ABab12-."
+        classes = ["AB", "ab", "12", "-."]
+
+        def has_all(s):
+            return all(any(c in cls for c in s) for cls in classes)
+
+        accepted = sum(1 for p in product(charset, repeat=4) if has_all("".join(p)))
+        assert accepted == 384  # 4! * 2**4
+        assert entropy_bits_all_classes(charset, 4) == pytest.approx(
+            math.log2(accepted)
+        )
+
+    def test_always_below_unconstrained_entropy(self):
+        for length in (4, 8, 12, 32):
+            assert entropy_bits_all_classes(FULL, length) < entropy_bits(
+                len(FULL), length
+            )
+
+    def test_correction_negligible_at_default_length(self):
+        # At 32 chars the rejection correction must be well under a bit.
+        gap = entropy_bits(len(FULL), 32) - entropy_bits_all_classes(FULL, 32)
+        assert 0 < gap < 0.05
+
+    def test_correction_real_at_short_lengths(self):
+        # At length 4 the naive figure overstates by ~3.8 bits.
+        gap = entropy_bits(len(FULL), 4) - entropy_bits_all_classes(FULL, 4)
+        assert gap > 3
+
+    def test_zero_when_length_below_class_count(self):
+        # 4 classes cannot all appear in 3 draws: no accepted strings.
+        assert entropy_bits_all_classes(FULL, 3) == 0.0
+
+    def test_degenerate_inputs(self):
+        assert entropy_bits_all_classes("a", 10) == 0.0
+        assert entropy_bits_all_classes(FULL, 0) == 0.0
+
+    def test_duplicates_in_charset_ignored(self):
+        assert entropy_bits_all_classes("Aa1." * 10, 8) == pytest.approx(
+            entropy_bits_all_classes("Aa1.", 8)
+        )
 
 
 class TestStrengthLabel:

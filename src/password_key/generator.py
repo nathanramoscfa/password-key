@@ -20,6 +20,7 @@ __all__ = [
     "FULL",
     "URL_SAFE",
     "entropy_bits",
+    "entropy_bits_all_classes",
     "generate",
     "strength_label",
 ]
@@ -62,6 +63,36 @@ def entropy_bits(charset_size: int, length: int) -> float:
     if charset_size < 2 or length < 1:
         return 0.0
     return math.log2(charset_size) * length
+
+
+def entropy_bits_all_classes(charset: str, length: int) -> float:
+    """Bits of entropy for ``generate(..., require_all_classes=True)``.
+
+    Rejection keeps the output uniform, but uniform over a *smaller*
+    set: every string missing a class is discarded. The honest figure
+    is therefore ``log2`` of the accepted-string count, computed
+    exactly by inclusion-exclusion over the classes present in the
+    charset. At 32 characters the correction is ~0.03 bits; at the
+    short lengths where composition rules actually bite it is real
+    (~3.8 bits at length 4 with the FULL set).
+    """
+    chars = set(charset)
+    n = len(chars)
+    if n < 2 or length < 1:
+        return 0.0
+    sizes = [len(chars & set(cls)) for cls in _CLASSES]
+    sizes = [s for s in sizes if s]
+    symbols = sum(1 for ch in chars if not ch.isalnum())
+    if symbols:
+        sizes.append(symbols)
+    accepted = 0
+    for subset in range(2 ** len(sizes)):
+        excluded = sum(s for i, s in enumerate(sizes) if subset >> i & 1)
+        sign = -1 if bin(subset).count("1") % 2 else 1
+        accepted += sign * (n - excluded) ** length
+    if accepted < 2:
+        return 0.0
+    return math.log2(accepted)
 
 
 def strength_label(bits: float) -> str:
