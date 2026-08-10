@@ -44,8 +44,7 @@ class TestWordlist:
         )
         digest = hashlib.sha256(data.replace(b"\r\n", b"\n")).hexdigest()
         assert (
-            digest
-            == "addd35536511597a02fa0a9ff1e5284677b8883b83e986e43f15a3db996b903e"
+            digest == "addd35536511597a02fa0a9ff1e5284677b8883b83e986e43f15a3db996b903e"
         )
 
     def test_prefix_free(self):
