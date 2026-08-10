@@ -110,7 +110,7 @@ generate(48)                      # longer
 generate(20, charset=FULL)        # full punctuation
 generate(exclude_ambiguous=True)  # no 0 O 1 l I |
 generate_passphrase(6)            # 'correct-horse-battery-staple-...'
-entropy_bits(66, 32)              # 193.38...
+entropy_bits(66, 32)              # 193.42...
 ```
 
 Everything is drawn from `secrets` — never `random`.

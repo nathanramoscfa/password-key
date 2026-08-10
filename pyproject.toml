@@ -79,6 +79,8 @@ addopts = "-q"
 line-length = 88
 target-version = "py39"
 src = ["src", "tests"]
+# Keep ruff off Markdown: README code blocks use aligned comments on purpose.
+extend-exclude = ["*.md"]
 
 [tool.ruff.lint]
 select = [
