@@ -1,7 +1,7 @@
 # password-key
 
 [![PyPI](https://img.shields.io/pypi/v/password-key)](https://pypi.org/project/password-key/)
-[![Python](https://img.shields.io/pypi/pyversions/password-key)](https://pypi.org/project/password-key/)
+[![Python](https://img.shields.io/pypi/pyversions/password-key.svg)](https://pypi.org/project/password-key/)
 [![CI](https://github.com/nathanramoscfa/password-key/actions/workflows/ci.yml/badge.svg)](https://github.com/nathanramoscfa/password-key/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
