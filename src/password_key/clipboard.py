@@ -21,10 +21,25 @@ from __future__ import annotations
 import shutil
 import subprocess
 import sys
+from typing import Any, cast
 
 __all__ = ["clear", "copy", "read"]
 
 _SUBPROCESS_TIMEOUT = 5  # seconds; a clipboard helper should be instant
+
+
+def _windll() -> Any:
+    """``ctypes.windll``, reached through ``Any``.
+
+    typeshed declares ``windll`` only on Windows, so the ``--platform
+    linux`` type-check run cannot see the attribute. Going through a
+    cast keeps both platform runs clean without ignoring attribute
+    errors across the module, which would hide real mistakes in the
+    Win32 calls below.
+    """
+    import ctypes
+
+    return cast(Any, ctypes).windll
 
 
 # ---------------------------------------------------------------------------
@@ -39,8 +54,8 @@ def _win_copy(text: str) -> bool:
     CF_UNICODETEXT = 13
     GMEM_MOVEABLE = 0x0002
 
-    kernel32 = ctypes.windll.kernel32
-    user32 = ctypes.windll.user32
+    kernel32 = _windll().kernel32
+    user32 = _windll().user32
 
     kernel32.GlobalAlloc.restype = wintypes.HGLOBAL
     kernel32.GlobalAlloc.argtypes = [wintypes.UINT, ctypes.c_size_t]
@@ -83,8 +98,8 @@ def _win_read() -> str | None:
 
     CF_UNICODETEXT = 13
 
-    kernel32 = ctypes.windll.kernel32
-    user32 = ctypes.windll.user32
+    kernel32 = _windll().kernel32
+    user32 = _windll().user32
 
     kernel32.GlobalLock.restype = wintypes.LPVOID
     kernel32.GlobalLock.argtypes = [wintypes.HGLOBAL]
@@ -108,7 +123,7 @@ def _win_read() -> str | None:
         user32.CloseClipboard()
 
 
-def _win_open_clipboard(user32, attempts: int = 5) -> bool:
+def _win_open_clipboard(user32: Any, attempts: int = 5) -> bool:
     """Open the clipboard, retrying briefly if another app holds it."""
     import time
 

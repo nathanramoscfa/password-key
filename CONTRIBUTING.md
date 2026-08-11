@@ -26,14 +26,25 @@ pip install -e .[dev]
 ## Before you open a PR
 
 ```bash
-ruff check .          # lint (includes bandit security rules)
-ruff format --check . # formatting
-pytest                # full test suite
+ruff check .           # lint (includes bandit security rules)
+ruff format --check .  # formatting
+pytest                 # full test suite
+mypy --platform linux  # also run for darwin and win32 in CI
+```
+
+If you touch [`contrib/new-password.ps1`](contrib/new-password.ps1), run
+its suite too (Pester 5, Windows):
+
+```powershell
+Invoke-Pester contrib/tests
 ```
 
 - Add tests for any behavior change. The distribution test
   (`tests/test_generator.py::TestDistribution`) must keep passing — it is
   the canary for sampling bias.
+- Changing a charset means changing it in **both** implementations. A
+  parity test in `contrib/tests` compares the PowerShell alphabets
+  against `password_key.generator`, and will fail if they drift apart.
 - Keep the docs honest: if behavior changes, update `README.md` and the
   `--help` text in the same PR.
 - One logical change per PR.

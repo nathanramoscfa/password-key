@@ -4,6 +4,43 @@ All notable changes to this project are documented here. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+No behavior changes. This release is about making the project's existing
+security claims checkable by someone who has no reason to trust the
+author.
+
+### Added
+
+- **README section on verifying a release** rather than trusting it.
+  Every artifact already carried a PEP 740 attestation binding it to the
+  commit it was built from; nothing said so or explained how to check it.
+- **CodeQL** analysis (`security-extended`) on every push and weekly.
+- **OpenSSF Scorecard**, publishing an independent supply-chain score.
+- **A Pester suite for `contrib/new-password.ps1`** — until now a second
+  credential generator with no tests at all. Covers charset containment,
+  modulo bias (chi-squared over 33,000 draws), exclusion of shell- and
+  SQL-hostile characters, and parity of both alphabets with
+  `password_key.generator`, so the two implementations cannot drift apart
+  unnoticed.
+- **`mypy --strict` in CI**, run for `linux`, `darwin`, and `win32`. The
+  package shipped `py.typed` — a promise to every importer — that nothing
+  had been enforcing.
+
+### Changed
+
+- `contrib/new-password.ps1` returns early when dot-sourced, so the
+  generator can be tested without copying a password to the clipboard as
+  an import side effect.
+- Internal type annotations added to four functions. `ctypes.windll` is
+  now reached through a documented cast, since typeshed declares it only
+  on Windows and the non-Windows type-check runs are worth keeping.
+- **Trove classifier lowered from `Development Status :: 5 -
+  Production/Stable` to `4 - Beta`.** Nothing got less reliable; the
+  original claim was simply not one this project had earned yet, and an
+  unearned stability claim is exactly what makes a careful reader
+  discount everything else in the metadata.
+
 ## [1.1.0] - 2026-08-10
 
 First release published to PyPI. Incorporates the results of a full

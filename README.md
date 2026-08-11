@@ -3,6 +3,8 @@
 [![PyPI](https://img.shields.io/pypi/v/password-key)](https://pypi.org/project/password-key/)
 [![Python](https://img.shields.io/pypi/pyversions/password-key.svg)](https://pypi.org/project/password-key/)
 [![CI](https://github.com/nathanramoscfa/password-key/actions/workflows/ci.yml/badge.svg)](https://github.com/nathanramoscfa/password-key/actions/workflows/ci.yml)
+[![CodeQL](https://github.com/nathanramoscfa/password-key/actions/workflows/codeql.yml/badge.svg)](https://github.com/nathanramoscfa/password-key/actions/workflows/codeql.yml)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/nathanramoscfa/password-key/badge)](https://scorecard.dev/viewer/?uri=github.com/nathanramoscfa/password-key)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **Cryptographically secure passwords that are safe to paste anywhere.**
@@ -147,13 +149,70 @@ password into an escaping bug.
 | Decision | Why |
 | --- | --- |
 | `secrets` (OS CSPRNG), never `random` | `random` is seeded, deterministic pseudo-randomness — unfit for credentials. |
-| Unbiased selection | `secrets.choice` uses rejection sampling internally; no character is ever more likely than another (verified by a chi-squared test in CI). |
+| Unbiased selection | `secrets.choice` uses rejection sampling internally; no character is ever more likely than another. Checked by a chi-squared test over ~64k draws — [test_generator.py](tests/test_generator.py#L103), and the [same test](contrib/tests/new-password.Tests.ps1) against the PowerShell script. |
 | Clipboard, not terminal | Terminal scrollback is written to disk. The secret is displayed only on explicit request or when no clipboard exists. |
 | Zero dependencies | Nothing to typosquat, nothing to compromise. Clipboard access uses the Win32 API directly (`ctypes`) and `pbcopy` / `wl-copy` / `xclip` elsewhere. |
 | Guarded auto-clear | `--clear` wipes the clipboard only while it still holds the generated password. |
 | No state, no telemetry, no network | Passwords are never logged, cached, or written anywhere. |
 
 Found a vulnerability? See [SECURITY.md](SECURITY.md).
+
+## Verifying this, rather than trusting it
+
+A password generator asks for more trust than most packages, and a
+README is the wrong basis for granting it. Everything above is meant to
+be checkable by a stranger.
+
+**Check that the wheel you installed came from this source.** Releases
+are published with [trusted publishing](https://docs.pypi.org/trusted-publishers/)
+— there is no long-lived API token that could be stolen and used to push
+a package this repository never built — and each artifact carries a
+[PEP 740](https://peps.python.org/pep-0740/) attestation binding it to
+the commit it was built from:
+
+```bash
+VERSION=$(python -c "import password_key; print(password_key.__version__)")
+pipx run pypi-attestations verify pypi \
+  --repository https://github.com/nathanramoscfa/password-key \
+  "pypi:password_key-${VERSION}-py3-none-any.whl"
+```
+
+That checks the version you actually have, not the one this README was
+written against. A pass prints `OK: password_key-<version>-py3-none-any.whl`;
+point it at any other repository and it fails, which is the point. (On
+Windows, `pypi-attestations` needs Developer Mode enabled — its trust-root
+cache creates a symlink, and without that privilege it stops with
+`WinError 1314` before checking anything.)
+
+Installing nothing, the same evidence is on the
+[PyPI page](https://pypi.org/project/password-key/) under **Verified
+details**: publisher `nathanramoscfa/password-key`, workflow
+[`publish.yml`](.github/workflows/publish.yml), the commit SHA, and a
+[Sigstore](https://www.sigstore.dev/) transparency-log entry that is
+public and append-only.
+
+**Then read it.** No signature can tell you the code is *good*, only
+that it is the code that was published. This package is deliberately
+small enough to audit in one sitting: the entire security-relevant
+surface is [generator.py](src/password_key/generator.py) (167 lines) and
+[passphrase.py](src/password_key/passphrase.py) (80 lines), with zero
+runtime dependencies to follow. There is no cryptography of our own to
+review — every random draw is `secrets.choice`.
+
+**What checks it besides the author**, on every push:
+
+| Check | What it covers |
+| --- | --- |
+| [Tests](tests/) | 111 tests on Linux, macOS, and Windows × Python 3.9–3.13. |
+| [Pester suite](contrib/tests/) | The [PowerShell script](contrib/new-password.ps1) is a second credential generator, so it gets its own bias and charset tests — including a parity check that its alphabet still matches the Python one. |
+| `mypy --strict` | Run for `linux`, `darwin`, *and* `win32`, so the Windows-only clipboard path is type-checked on every commit rather than only when someone runs it. |
+| [CodeQL](.github/workflows/codeql.yml) | GitHub's `security-extended` query suite; results are in the repository's Security tab. |
+| [OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/nathanramoscfa/password-key) | A third party scoring this repo's supply-chain posture — pinned actions, token scopes, release provenance — so the claim is not ours to make. |
+
+**What this does not have.** It is a young project with one maintainer
+and no independent security audit. The checks above are automated ones;
+none of them is a human expert reading the code adversarially. Judge it
+on the source, which is the point of keeping it this small.
 
 ## Windows double-click launcher
 
