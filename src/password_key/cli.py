@@ -15,9 +15,11 @@ from __future__ import annotations
 
 import argparse
 import contextlib
+import io
 import os
 import sys
 import time
+from typing import IO
 
 from . import __version__, clipboard, generator, passphrase
 
@@ -26,7 +28,7 @@ from . import __version__, clipboard, generator, passphrase
 # ---------------------------------------------------------------------------
 
 
-def _colors_enabled(stream) -> bool:
+def _colors_enabled(stream: IO[str]) -> bool:
     if os.environ.get("NO_COLOR"):
         return False
     if not hasattr(stream, "isatty") or not stream.isatty():
@@ -44,7 +46,9 @@ def _enable_windows_vt() -> None:
     import ctypes
 
     with contextlib.suppress(Exception):
-        kernel32 = ctypes.windll.kernel32
+        # See clipboard._windll: windll is Windows-only in typeshed, so
+        # the linux type-check run needs the attribute reached via Any.
+        kernel32 = clipboard._windll().kernel32
         handle = kernel32.GetStdHandle(-11)  # STD_OUTPUT_HANDLE
         mode = ctypes.c_ulong()
         if kernel32.GetConsoleMode(handle, ctypes.byref(mode)):
@@ -178,7 +182,7 @@ def build_parser() -> argparse.ArgumentParser:
 # ---------------------------------------------------------------------------
 
 
-def _generate_one(args) -> tuple[str, float, str]:
+def _generate_one(args: argparse.Namespace) -> tuple[str, float, str]:
     """Returns (secret, entropy_bits, charset_description)."""
     if args.words is not None:
         secret = passphrase.generate_passphrase(
@@ -218,7 +222,9 @@ def _generate_one(args) -> tuple[str, float, str]:
 # ---------------------------------------------------------------------------
 
 
-def _print_panel(secret: str, bits: float, desc: str, args, style: _Style) -> None:
+def _print_panel(
+    secret: str, bits: float, desc: str, args: argparse.Namespace, style: _Style
+) -> None:
     err = sys.stderr
     label = generator.strength_label(bits)
     warn = style.yellow if args.full else ""
@@ -405,8 +411,9 @@ def main(argv: list[str] | None = None) -> int:
         # On Windows, text-mode stdout turns \n into \r\n when piped, and
         # $(password-key --print) would capture a trailing invisible \r -
         # the same bug class as clip.exe appending a newline.
-        with contextlib.suppress(AttributeError, ValueError, OSError):
-            sys.stdout.reconfigure(newline="\n")
+        if isinstance(sys.stdout, io.TextIOWrapper):
+            with contextlib.suppress(ValueError, OSError):
+                sys.stdout.reconfigure(newline="\n")
         for secret, _, _ in results:
             print(secret)
         if args.count > 1 and not args.print_only:

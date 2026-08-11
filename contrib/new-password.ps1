@@ -95,6 +95,14 @@ function New-RandomPassword {
     }
 }
 
+# Dot-sourcing (". .\new-password.ps1") loads the charsets and the
+# generator function without running anything. That is how the Pester
+# suite in contrib/tests exercises this script: generating a password
+# and writing to the clipboard as an import side effect would make the
+# generator untestable, and an untested credential generator is one
+# nobody has any reason to trust.
+if ($MyInvocation.InvocationName -eq '.') { return }
+
 # URL-safe is the DEFAULT. Getting this backwards costs an hour: a '@'
 # in a password silently splits a DSN, and the error surfaces far from
 # the cause.

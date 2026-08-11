@@ -25,7 +25,11 @@ keywords = [
     "url-safe",
 ]
 classifiers = [
-    "Development Status :: 5 - Production/Stable",
+    # Beta, not Production/Stable: the code is tested and the API is
+    # settled, but the project is new and nobody outside it has audited
+    # it yet. Claiming stability you haven't earned is the cheapest way
+    # to lose a careful reader of a security tool.
+    "Development Status :: 4 - Beta",
     "Environment :: Console",
     "Intended Audience :: Developers",
     "Intended Audience :: End Users/Desktop",
@@ -59,6 +63,7 @@ pwk = "password_key.cli:main"
 
 [project.optional-dependencies]
 dev = [
+    "mypy>=1.8",
     "pytest>=7.0",
     "ruff>=0.4",
 ]
@@ -75,6 +80,14 @@ packages = ["src/password_key"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+# The package ships py.typed, so the annotations are a promise to anyone
+# importing it. Strict mode is what makes that promise checkable in CI
+# rather than asserted in a README.
+[tool.mypy]
+python_version = "3.9"
+files = ["src/password_key"]
+strict = true
 
 [tool.ruff]
 line-length = 88

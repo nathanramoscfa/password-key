@@ -1,0 +1,50 @@
+# Static analysis by GitHub CodeQL.
+#
+# The point is not that CodeQL will find much in ~900 lines of
+# dependency-free Python. The point is that a stranger evaluating a
+# password generator can see that something other than the author looks
+# at every commit, and can read the results themselves in the Security
+# tab rather than taking the README's word for it.
+
+name: CodeQL
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    # Weekly, so a newly published query catches old code too.
+    - cron: "27 5 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  analyze:
+    name: Analyze Python
+    runs-on: ubuntu-latest
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@c4dd10e44af883a891fe31ced449bcb4a6728b9b # v3.37.6
+        with:
+          languages: python
+          build-mode: none
+          # security-extended over the default suite: this is a tool that
+          # generates credentials, so the extra precision-tradeoff queries
+          # are worth the occasional false positive.
+          queries: security-extended
+
+      - name: Perform CodeQL analysis
+        uses: github/codeql-action/analyze@c4dd10e44af883a891fe31ced449bcb4a6728b9b # v3.37.6
+        with:
+          category: "/language:python"

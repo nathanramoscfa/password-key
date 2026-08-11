@@ -23,6 +23,50 @@ jobs:
       - run: ruff check .
       - run: ruff format --check .
 
+  types:
+    # The package ships py.typed. Checking all three platforms from one
+    # runner matters here: the Win32 clipboard path is invisible to a
+    # linux-only run, and a linux-only run is what most projects do.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - run: pip install -e .[dev]
+      - run: mypy --platform linux
+      - run: mypy --platform darwin
+      - run: mypy --platform win32
+
+  powershell:
+    # contrib/new-password.ps1 generates credentials too, so it gets the
+    # same uniformity and charset checks as the Python generator rather
+    # than being trusted on inspection.
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      # Installed so the parity tests can compare the PowerShell
+      # charsets against the Python ones instead of skipping.
+      - run: pip install -e .
+      - name: Install Pester
+        shell: pwsh
+        run: Install-Module Pester -MinimumVersion 5.5.0 -Force -Scope CurrentUser -SkipPublisherCheck
+      - name: Run Pester
+        shell: pwsh
+        run: |
+          $config = New-PesterConfiguration
+          $config.Run.Path = 'contrib/tests'
+          $config.Run.Throw = $true
+          $config.Output.Verbosity = 'Detailed'
+          Invoke-Pester -Configuration $config
+
   test:
     strategy:
       fail-fast: false
