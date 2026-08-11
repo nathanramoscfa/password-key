@@ -28,6 +28,19 @@ Things that are *by design* and not vulnerabilities:
   clipboard hygiene.
 - `--show` / `--print` write the secret to the terminal or stdout when
   explicitly requested.
+- If no clipboard is reachable at all (headless box, SSH session,
+  missing helper), the password is printed instead. Withholding it
+  there would destroy a credential the user has no other way to
+  retrieve.
+
+  Running CodeQL against this repository reports both of the above as
+  `py/clear-text-logging-sensitive-data` (high severity) in `cli.py`.
+  That is the analyzer correctly identifying the intended feature, not
+  a finding we have overlooked: the alerts are dismissed as *won't fix*
+  with that reasoning attached, and you can read the dismissals in the
+  repository's Security tab. If you find a path that prints a secret
+  *without* one of those two conditions holding, that is a real
+  vulnerability — please report it.
 - Python cannot guarantee secrets are wiped from process memory; the
   process is short-lived by design.
 
