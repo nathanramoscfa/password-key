@@ -41,9 +41,24 @@ jobs:
           python-version: "3.12"
       - run: pip install --require-hashes -r requirements/dev.txt
       - run: pip install --no-deps -e .
-      - run: mypy --platform linux
-      - run: mypy --platform darwin
-      - run: mypy --platform win32
+      - name: Type-check linux, darwin and win32
+        run: |
+          set -uo pipefail
+          fail=0
+          for platform in linux darwin win32; do
+            echo "--- mypy --platform $platform ---"
+            out=$(mypy --platform "$platform" 2>&1) || fail=1
+            echo "$out"
+            # mypy does not fail when it cannot honor python_version - it
+            # prints a notice and silently checks against a newer target
+            # instead. A type check that quietly stops covering the oldest
+            # supported Python must break the build, not pass green.
+            if grep -q "is not supported" <<<"$out"; then
+              echo "::error::mypy could not honor python_version and retargeted silently"
+              fail=1
+            fi
+          done
+          exit $fail
 
   powershell:
     # contrib/new-password.ps1 generates credentials too, so it gets the
@@ -119,7 +134,10 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install --require-hashes -r requirements/dev.txt
+      # pytest only. The matrix spans 3.9-3.13, and the linters are not
+      # used here — installing them would drag the whole toolchain's
+      # Python floor onto every matrix leg for no benefit.
+      - run: pip install --require-hashes -r requirements/test.txt
       - run: pip install --no-deps -e .
       - run: pytest
 
