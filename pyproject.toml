@@ -96,6 +96,20 @@ packages = ["src/password_key"]
 testpaths = ["tests"]
 addopts = "-q"
 
+[tool.coverage.run]
+source = ["password_key"]
+branch = true
+
+[tool.coverage.report]
+# A floor, not a target. The number that matters is the one on the
+# modules that generate secrets: generator.py and passphrase.py sit at
+# 99% and 95%, and the shortfall below is concentrated in the
+# interactive menu and in clipboard backends that cannot all execute on
+# one operating system. Chasing a single global percentage would mean
+# writing tests for the sake of the number.
+fail_under = 70
+show_missing = true
+
 # The package ships py.typed, so the annotations are a promise to anyone
 # importing it. Strict mode is what makes that promise checkable in CI
 # rather than asserted in a README.
