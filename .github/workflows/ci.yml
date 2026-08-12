@@ -90,6 +90,9 @@ jobs:
       - run: pip install --no-deps -e .
       - name: Fuzz the generator and passphrase APIs
         run: |
+          # libFuzzer requires artifact_prefix to already exist; it will
+          # not create it, and errors out before fuzzing if it is missing.
+          mkdir -p fuzz-artifacts
           python tests/fuzz/fuzz_generator.py \
             -max_total_time=60 \
             -print_final_stats=1 \
