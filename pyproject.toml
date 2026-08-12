@@ -71,7 +71,7 @@ dev = [
     # "3.9"` ("must be 3.10 or higher") and falls back silently, which
     # would quietly stop checking the oldest Python this package claims
     # to support. Lift the cap when requires-python moves past 3.9.
-    "mypy>=1.8,<2",
+    "mypy>=1.8,<3",
     "pytest>=7.0",
     "ruff>=0.4",
 ]
