@@ -26,6 +26,10 @@ author.
 - **`mypy --strict` in CI**, run for `linux`, `darwin`, and `win32`. The
   package shipped `py.typed` — a promise to every importer — that nothing
   had been enforcing.
+- **Dependabot**, so the SHA-pinned GitHub Actions actually get
+  refreshed. Pinning by commit SHA is the right default, but an
+  unrefreshed pin quietly keeps a known-vulnerable action forever; the
+  pin is only as good as the process that updates it.
 
 ### Changed
 
