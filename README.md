@@ -5,6 +5,7 @@
 [![CI](https://github.com/nathanramoscfa/password-key/actions/workflows/ci.yml/badge.svg)](https://github.com/nathanramoscfa/password-key/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/nathanramoscfa/password-key/actions/workflows/codeql.yml/badge.svg)](https://github.com/nathanramoscfa/password-key/actions/workflows/codeql.yml)
 [![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/nathanramoscfa/password-key/badge)](https://scorecard.dev/viewer/?uri=github.com/nathanramoscfa/password-key)
+[![OpenSSF Best Practices](https://www.bestpractices.dev/projects/14032/badge)](https://www.bestpractices.dev/projects/14032)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
 **Cryptographically secure passwords that are safe to paste anywhere.**
