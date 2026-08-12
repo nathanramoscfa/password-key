@@ -31,8 +31,29 @@ author.
   unrefreshed pin quietly keeps a known-vulnerable action forever; the
   pin is only as good as the process that updates it.
 
+- **A real Atheris fuzz target** for the generator and passphrase APIs
+  (`tests/fuzz/`), run for a bounded time on every push. It asserts that
+  `generate` either honors its contract exactly or raises `ValueError`,
+  and that entropy figures are never *over*-stated — the direction that
+  would tell someone a weak secret is strong. The properties are also
+  exercised by the normal test suite, so an assertion that stops running
+  cannot go unnoticed.
+- **Hash-pinned CI tooling.** Every `pip install` in CI now runs with
+  `--require-hashes` against lock files compiled from `pyproject.toml`,
+  so a substituted wheel cannot enter a job. Pinning the GitHub Actions
+  by SHA had left this half of the supply chain open.
+
 ### Changed
 
+- **`LICENSE` is now unmodified MIT text.** The bundled EFF wordlist's
+  CC BY 3.0 attribution moved to `THIRD-PARTY-NOTICES.md`, which ships
+  in the wheel and sdist alongside it. The appended section had made
+  every license scanner — GitHub included — resolve this project to
+  "Other" / `NOASSERTION` rather than MIT.
+- **`mypy` capped below 2.0.** mypy 2.x rejects `python_version = "3.9"`
+  and falls back silently, which would have quietly stopped type-checking
+  the oldest Python this package supports. Lift the cap when
+  `requires-python` moves past 3.9.
 - `contrib/new-password.ps1` returns early when dot-sourced, so the
   generator can be tested without copying a password to the clipboard as
   an import side effect.

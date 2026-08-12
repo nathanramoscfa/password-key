@@ -22,6 +22,11 @@ updates:
 
   # Dev tooling only — this package has zero runtime dependencies, and
   # PRs that would add one are declined (see CONTRIBUTING.md).
+  #
+  # Two directories: `/` for the dev extra in pyproject.toml, and
+  # `/requirements` for the hash-pinned lock files CI installs from.
+  # Without the second entry the locks would never be refreshed, which
+  # is the same stale-pin trap the action SHAs would have had.
   - package-ecosystem: pip
     directory: /
     schedule:
@@ -30,5 +35,16 @@ updates:
       prefix: deps
     groups:
       dev-tooling:
+        patterns:
+          - "*"
+
+  - package-ecosystem: pip
+    directory: /requirements
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: deps
+    groups:
+      locked-tooling:
         patterns:
           - "*"

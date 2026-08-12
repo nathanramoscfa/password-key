@@ -19,7 +19,11 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
-      - run: pip install ruff
+      # Hash-pinned. requirements/*.txt are compiled from pyproject.toml
+      # with `uv pip compile --universal --generate-hashes` (see the
+      # header in each file); --require-hashes then refuses to install
+      # anything whose artifact does not match, transitive deps included.
+      - run: pip install --require-hashes -r requirements/dev.txt
       - run: ruff check .
       - run: ruff format --check .
 
@@ -35,7 +39,8 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
-      - run: pip install -e .[dev]
+      - run: pip install --require-hashes -r requirements/dev.txt
+      - run: pip install --no-deps -e .
       - run: mypy --platform linux
       - run: mypy --platform darwin
       - run: mypy --platform win32
@@ -54,7 +59,7 @@ jobs:
           python-version: "3.12"
       # Installed so the parity tests can compare the PowerShell
       # charsets against the Python ones instead of skipping.
-      - run: pip install -e .
+      - run: pip install --no-deps -e .
       - name: Install Pester
         shell: pwsh
         run: Install-Module Pester -MinimumVersion 5.5.0 -Force -Scope CurrentUser -SkipPublisherCheck
@@ -66,6 +71,36 @@ jobs:
           $config.Run.Throw = $true
           $config.Output.Verbosity = 'Detailed'
           Invoke-Pester -Configuration $config
+
+  fuzz:
+    # A short, bounded fuzz run on every push. Not a substitute for
+    # continuous fuzzing, but enough that the harness is known to build
+    # and run rather than merely existing in the tree.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          # Atheris ships wheels per interpreter; 3.12 is the newest
+          # with a published wheel at the pinned version.
+          python-version: "3.12"
+      - run: pip install --require-hashes -r requirements/fuzz.txt
+      - run: pip install --no-deps -e .
+      - name: Fuzz the generator and passphrase APIs
+        run: |
+          python tests/fuzz/fuzz_generator.py \
+            -max_total_time=60 \
+            -print_final_stats=1 \
+            -artifact_prefix=fuzz-artifacts/
+      - name: Upload crash artifacts
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: fuzz-artifacts
+          path: fuzz-artifacts/
+          if-no-files-found: ignore
 
   test:
     strategy:
@@ -81,7 +116,8 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: ${{ matrix.python-version }}
-      - run: pip install -e .[dev]
+      - run: pip install --require-hashes -r requirements/dev.txt
+      - run: pip install --no-deps -e .
       - run: pytest
 
   build:
@@ -93,7 +129,7 @@ jobs:
       - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
-      - run: pip install build twine
+      - run: pip install --require-hashes -r requirements/build.txt
       - run: python -m build
       - run: twine check dist/*
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
