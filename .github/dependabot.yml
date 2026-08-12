@@ -1,0 +1,34 @@
+# Every third-party action in this repo is pinned to a full commit SHA,
+# which is the right default: a moved or compromised tag must not be
+# able to change what runs in the job holding the PyPI OIDC identity.
+#
+# The cost of that is pins go stale silently, including past security
+# fixes — a pin is only as good as the process that refreshes it.
+# Dependabot is that process: it opens a PR when a pinned action moves,
+# updating both the SHA and the trailing version comment.
+
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns:
+          - "*"
+
+  # Dev tooling only — this package has zero runtime dependencies, and
+  # PRs that would add one are declined (see CONTRIBUTING.md).
+  - package-ecosystem: pip
+    directory: /
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: deps
+    groups:
+      dev-tooling:
+        patterns:
+          - "*"
