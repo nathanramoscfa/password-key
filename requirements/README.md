@@ -45,6 +45,24 @@ uv pip compile requirements/fuzz.in --python-platform linux \
   --python-version 3.12 --generate-hashes --output-file requirements/fuzz.txt
 ```
 
+Each lock is scoped to where its job actually runs. `dev.txt`,
+`build.txt`, and `fuzz.txt` are linux/3.12 because the `lint`, `types`,
+`build`, `Publish` and `fuzz` jobs run only there. Resolving those
+`--universal` would pull in an old-interpreter marker branch nothing
+executes — and did: `build.txt` briefly carried vulnerable
+`cryptography` and `urllib3` pins that existed solely to satisfy a
+Python 3.9 branch of a job that only ever runs on 3.12.
+
+## Known, accepted
+
+`test.txt` pins `pytest==8.4.2` on its Python 3.9 branch. That release
+is affected by GHSA "pytest has vulnerable tmpdir handling", fixed in
+9.0.3 — which requires Python ≥ 3.10, so no patched pytest exists for
+3.9. It is a test runner on a throwaway CI container, it is never a
+dependency of the published package (which has none), and the fix is
+unavailable rather than unapplied. It resolves when `requires-python`
+moves past 3.9.
+
 Note that Dependabot edits these files textually — it does not re-run
 `uv`, so it cannot recompute the environment markers a universal
 resolution produces. A bump that changes a package's `Requires-Python`
