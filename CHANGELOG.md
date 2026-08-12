@@ -26,6 +26,10 @@ author.
 - **`mypy --strict` in CI**, run for `linux`, `darwin`, and `win32`. The
   package shipped `py.typed` — a promise to every importer — that nothing
   had been enforcing.
+- **OpenSSF Best Practices badge** (passing), and branch protection on `main`
+  now applies to administrators too. The badge audit is not decoration: it
+  found that nothing here measured branch coverage, which is why the
+  coverage gate above exists.
 - **Dependabot**, so the SHA-pinned GitHub Actions actually get
   refreshed. Pinning by commit SHA is the right default, but an
   unrefreshed pin quietly keeps a known-vulnerable action forever; the
