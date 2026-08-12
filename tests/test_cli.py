@@ -240,3 +240,185 @@ class TestAsciiOutput:
         monkeypatch.setattr("password_key.cli.time.sleep", lambda s: None)
         main(["--clear", "2"])
         _assert_ascii(capsys.readouterr().err, "auto-clear countdown")
+
+
+@pytest.fixture
+def answers(monkeypatch):
+    """Script the values ``input()`` returns, in order.
+
+    Pass an exception class instead of a string to simulate Ctrl+C or
+    Ctrl+D at that prompt. Asking for more input than was scripted fails
+    the test rather than hanging, which is the failure mode that makes
+    interactive code unpleasant to test.
+
+    Returns the list that accumulates the prompts actually shown, so a
+    test can assert on what the user was asked.
+    """
+
+    def _install(*responses):
+        queue = list(responses)
+        prompts = []
+
+        def fake_input(prompt=""):
+            prompts.append(prompt)
+            if not queue:
+                raise AssertionError(f"unscripted input() at prompt {prompt!r}")
+            item = queue.pop(0)
+            if isinstance(item, type) and issubclass(item, BaseException):
+                raise item()
+            return item
+
+        monkeypatch.setattr("builtins.input", fake_input)
+        return prompts
+
+    return _install
+
+
+class TestInteractiveMenu:
+    """The `-i` menu, reached by double-clicking New Password.bat.
+
+    This is the path taken by whoever is least equipped to debug it, so
+    every branch gets a test - including each way of pressing Ctrl+C.
+    """
+
+    def test_menu_is_shown_and_q_quits(self, fake_clipboard, answers, capsys):
+        answers("q")
+        assert main(["-i"]) == 0
+        out = capsys.readouterr().out
+        assert "password-key" in out
+        assert __version__ in out
+        assert fake_clipboard["value"] is None
+
+    def test_quit_accepts_uppercase(self, fake_clipboard, answers):
+        answers("Q")
+        assert main(["-i"]) == 0
+        assert fake_clipboard["value"] is None
+
+    def test_secret_never_reaches_the_terminal(self, fake_clipboard, answers, capsys):
+        """The core invariant, on the path least likely to be audited."""
+        answers("1", "n")
+        main(["-i"])
+        captured = capsys.readouterr()
+        secret = fake_clipboard["value"]
+        assert secret
+        assert secret not in captured.out
+        assert secret not in captured.err
+
+    def test_option_1_generates_the_default(self, fake_clipboard, answers):
+        answers("1", "n")
+        assert main(["-i"]) == 0
+        secret = fake_clipboard["value"]
+        assert len(secret) == 32
+        assert set(secret) <= set(generator.URL_SAFE)
+
+    def test_option_2_uses_the_requested_length(self, fake_clipboard, answers):
+        answers("2", "48", "n")
+        assert main(["-i"]) == 0
+        assert len(fake_clipboard["value"]) == 48
+
+    def test_option_2_reprompts_on_non_numeric_length(self, fake_clipboard, answers):
+        answers("2", "twelve", "q")
+        assert main(["-i"]) == 0
+        assert fake_clipboard["value"] is None
+
+    def test_option_2_reports_an_out_of_range_length(
+        self, fake_clipboard, answers, capsys
+    ):
+        # Parsed fine by argparse (type=int, no range), rejected by
+        # generate() - so this exercises the ValueError branch rather
+        # than argparse's own error path.
+        answers("2", str(generator.MIN_LENGTH - 1), "q")
+        assert main(["-i"]) == 0
+        assert "error:" in capsys.readouterr().err
+        assert fake_clipboard["value"] is None
+
+    def test_option_3_generates_a_six_word_passphrase(self, fake_clipboard, answers):
+        answers("3", "n")
+        assert main(["-i"]) == 0
+        phrase = fake_clipboard["value"]
+        # Four EFF words contain a hyphen themselves (drop-down, felt-tip,
+        # t-shirt, yo-yo), so the separator count is a lower bound, never
+        # an equality.
+        assert phrase.count("-") >= 5
+        assert phrase == phrase.lower()
+
+    def test_option_4_needs_confirmation_first(self, fake_clipboard, answers):
+        answers("4", "y", "n")
+        assert main(["-i"]) == 0
+        secret = fake_clipboard["value"]
+        assert set(secret) <= set(generator.FULL)
+
+    def test_option_4_declined_generates_nothing(self, fake_clipboard, answers):
+        answers("4", "n", "q")
+        assert main(["-i"]) == 0
+        assert fake_clipboard["value"] is None
+
+    def test_option_4_warns_about_connection_strings(
+        self, fake_clipboard, answers, capsys
+    ):
+        prompts = answers("4", "y", "n")
+        main(["-i"])
+        assert any("database" in p.lower() for p in prompts)
+        assert "WARNING" in capsys.readouterr().err
+
+    def test_unrecognized_choice_reprompts(self, fake_clipboard, answers):
+        prompts = answers("9", "", "q")
+        assert main(["-i"]) == 0
+        assert fake_clipboard["value"] is None
+        assert sum(1 for p in prompts if "Choose" in p) == 3
+
+    def test_generate_another_loops_back_to_the_menu(self, fake_clipboard, answers):
+        prompts = answers("1", "y", "1", "n")
+        assert main(["-i"]) == 0
+        assert sum(1 for p in prompts if "Choose" in p) == 2
+
+    @pytest.mark.parametrize("interrupt", [EOFError, KeyboardInterrupt])
+    def test_interrupt_at_the_menu_exits_cleanly(
+        self, fake_clipboard, answers, interrupt
+    ):
+        answers(interrupt)
+        assert main(["-i"]) == 0
+        assert fake_clipboard["value"] is None
+
+    @pytest.mark.parametrize("interrupt", [EOFError, KeyboardInterrupt])
+    def test_interrupt_at_length_prompt_reprompts(
+        self, fake_clipboard, answers, interrupt
+    ):
+        answers("2", interrupt, "q")
+        assert main(["-i"]) == 0
+        assert fake_clipboard["value"] is None
+
+    @pytest.mark.parametrize("interrupt", [EOFError, KeyboardInterrupt])
+    def test_interrupt_at_full_confirmation_reprompts(
+        self, fake_clipboard, answers, interrupt
+    ):
+        answers("4", interrupt, "q")
+        assert main(["-i"]) == 0
+        assert fake_clipboard["value"] is None
+
+    @pytest.mark.parametrize("interrupt", [EOFError, KeyboardInterrupt])
+    def test_interrupt_after_generating_still_exits_zero(
+        self, fake_clipboard, answers, interrupt
+    ):
+        answers("1", interrupt)
+        assert main(["-i"]) == 0
+        assert fake_clipboard["value"] is not None
+
+
+class TestModuleEntryPoint:
+    """``python -m password_key``.
+
+    The subprocess test in TestScripting already runs this for real; it
+    cannot be seen by coverage because it happens in a child process.
+    Running it in-process here covers the ``__main__`` guard and asserts
+    the exit status the shell would observe.
+    """
+
+    def test_run_as_module(self, fake_clipboard, monkeypatch):
+        import runpy
+
+        monkeypatch.setattr(sys, "argv", ["password-key"])
+        with pytest.raises(SystemExit) as excinfo:
+            runpy.run_module("password_key", run_name="__main__")
+        assert excinfo.value.code == 0
+        assert len(fake_clipboard["value"]) == 32

@@ -4,6 +4,24 @@ All notable changes to this project are documented here. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **Tests for the interactive menu** (`password-key -i`), which had none.
+  Every branch is covered, including each way of interrupting a prompt,
+  and one test asserts the secret never reaches stdout or stderr on that
+  path. This is the code reached by double-clicking `New Password.bat`,
+  so it is run by whoever is least equipped to diagnose it and was the
+  least tested thing in the package. `cli.py` goes from 68% to 92%.
+- **An in-process test for `python -m password_key`.** The entry point
+  was already exercised end to end by a subprocess test; coverage simply
+  could not see it from the parent process, which is why it read 0%.
+
+### Changed
+
+- Coverage floor raised from 70% to 80% (actual: 87%).
+
 ## [1.1.1] - 2026-08-12
 
 No behavior changes. This release is about making the project's existing

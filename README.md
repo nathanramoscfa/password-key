@@ -204,7 +204,7 @@ review — every random draw is `secrets.choice`.
 
 | Check | What it covers |
 | --- | --- |
-| [Tests](tests/) | 356 tests on Linux, macOS, and Windows × Python 3.9–3.13. |
+| [Tests](tests/) | 378 tests on Linux, macOS, and Windows × Python 3.9–3.13, at 87% branch coverage with a floor enforced in CI. |
 | [Fuzzing](tests/fuzz/) | An Atheris harness drives `generate` and `generate_passphrase` with adversarial input on every push, asserting they either honor the contract exactly or raise `ValueError` — and that entropy is never *over*-stated, the direction that would call a weak secret strong. |
 | [Pester suite](contrib/tests/) | The [PowerShell script](contrib/new-password.ps1) is a second credential generator, so it gets its own bias and charset tests — including a parity check that its alphabet still matches the Python one. |
 | `mypy --strict` | Run for `linux`, `darwin`, *and* `win32`, so the Windows-only clipboard path is type-checked on every commit rather than only when someone runs it. |
