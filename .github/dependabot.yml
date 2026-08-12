@@ -37,6 +37,14 @@ updates:
       dev-tooling:
         patterns:
           - "*"
+    ignore:
+      # mypy 2.x rejects `python_version = "3.9"` outright and falls back
+      # silently, which would end type-checking of the oldest Python this
+      # package supports without failing the build. The cap in
+      # pyproject.toml is deliberate; drop this ignore and the cap
+      # together when requires-python moves past 3.9.
+      - dependency-name: mypy
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: pip
     directory: /requirements
@@ -48,3 +56,11 @@ updates:
       locked-tooling:
         patterns:
           - "*"
+    ignore:
+      # mypy 2.x rejects `python_version = "3.9"` outright and falls back
+      # silently, which would end type-checking of the oldest Python this
+      # package supports without failing the build. The cap in
+      # pyproject.toml is deliberate; drop this ignore and the cap
+      # together when requires-python moves past 3.9.
+      - dependency-name: mypy
+        update-types: ["version-update:semver-major"]
