@@ -38,6 +38,11 @@ author.
   would tell someone a weak secret is strong. The properties are also
   exercised by the normal test suite, so an assertion that stops running
   cannot go unnoticed.
+- **Branch coverage measurement** on every test run, with a floor. The
+  figure that matters is on the modules that generate secrets —
+  `generator.py` at 99% and `passphrase.py` at 95%; the remainder is
+  concentrated in the interactive menu and in clipboard backends that
+  cannot all execute on one operating system.
 - **Hash-pinned CI tooling.** Every `pip install` in CI now runs with
   `--require-hashes` against lock files compiled from `pyproject.toml`,
   so a substituted wheel cannot enter a job. Pinning the GitHub Actions

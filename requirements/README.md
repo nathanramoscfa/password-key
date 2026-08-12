@@ -9,7 +9,7 @@ otherwise still land in a job.
 | File | Used by | Scope | Compiled from |
 | --- | --- | --- | --- |
 | `dev.txt` | `lint`, `types` | linux, 3.12 | `pyproject.toml` (`dev` extra) |
-| `test.txt` | `test` | universal, 3.9–3.13 | `test.in` |
+| `test.txt` | `test` | universal, 3.9–3.13 | `test.in` (pytest, pytest-cov) |
 | `build.txt` | `build`, `Publish to PyPI` | universal | `build.in` |
 | `fuzz.txt` | `fuzz` | linux, 3.12 | `fuzz.in` |
 

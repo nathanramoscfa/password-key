@@ -139,7 +139,7 @@ jobs:
       # Python floor onto every matrix leg for no benefit.
       - run: pip install --require-hashes -r requirements/test.txt
       - run: pip install --no-deps -e .
-      - run: pytest
+      - run: pytest --cov --cov-report=term-missing
 
   build:
     runs-on: ubuntu-latest
