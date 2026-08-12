@@ -21,7 +21,7 @@ from .generator import (
 )
 from .passphrase import generate_passphrase, load_wordlist
 
-__version__ = "1.1.1"
+__version__ = "1.1.2"
 
 __all__ = [
     "AMBIGUOUS",
