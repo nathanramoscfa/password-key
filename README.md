@@ -231,4 +231,4 @@ Built by [ArcForge Labs](https://arcforgelabs.dev).
 
 [MIT](LICENSE). The bundled EFF Large Wordlist is © the
 [Electronic Frontier Foundation](https://www.eff.org/deeplinks/2016/07/new-wordlists-random-passphrases),
-CC BY 3.0.
+CC BY 3.0 — see [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md).

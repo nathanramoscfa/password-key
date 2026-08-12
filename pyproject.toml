@@ -8,7 +8,11 @@ dynamic = ["version"]
 description = "Cryptographically secure passwords that are safe to paste anywhere — URL-safe by default, clipboard-first, zero dependencies."
 readme = "README.md"
 license = "MIT"
-license-files = ["LICENSE"]
+# LICENSE is kept as unmodified MIT text so license scanners resolve it
+# to MIT rather than "Other"; third-party attribution lives beside it.
+# Both ship in the wheel — CC BY 3.0 requires the wordlist's attribution
+# to travel with the wordlist.
+license-files = ["LICENSE", "THIRD-PARTY-NOTICES.md"]
 requires-python = ">=3.9"
 authors = [
     { name = "ArcForge Digital Labs LLC" },
@@ -63,7 +67,11 @@ pwk = "password_key.cli:main"
 
 [project.optional-dependencies]
 dev = [
-    "mypy>=1.8",
+    # Capped below 2.0 on purpose: mypy 2.x refuses `python_version =
+    # "3.9"` ("must be 3.10 or higher") and falls back silently, which
+    # would quietly stop checking the oldest Python this package claims
+    # to support. Lift the cap when requires-python moves past 3.9.
+    "mypy>=1.8,<2",
     "pytest>=7.0",
     "ruff>=0.4",
 ]
@@ -72,7 +80,14 @@ dev = [
 path = "src/password_key/__init__.py"
 
 [tool.hatch.build.targets.sdist]
-include = ["src", "tests", "README.md", "LICENSE", "CHANGELOG.md"]
+include = [
+    "src",
+    "tests",
+    "README.md",
+    "LICENSE",
+    "THIRD-PARTY-NOTICES.md",
+    "CHANGELOG.md",
+]
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/password_key"]

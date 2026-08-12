@@ -39,6 +39,11 @@ its suite too (Pester 5, Windows):
 Invoke-Pester contrib/tests
 ```
 
+CI installs its tooling from hash-pinned lock files. If you change the
+`dev` extra in `pyproject.toml`, regenerate them — see
+[`requirements/README.md`](requirements/README.md). Dependabot handles
+routine version bumps on its own.
+
 - Add tests for any behavior change. The distribution test
   (`tests/test_generator.py::TestDistribution`) must keep passing — it is
   the canary for sampling bias.
