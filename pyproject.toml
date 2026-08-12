@@ -101,13 +101,13 @@ source = ["password_key"]
 branch = true
 
 [tool.coverage.report]
-# A floor, not a target. The number that matters is the one on the
-# modules that generate secrets: generator.py and passphrase.py sit at
-# 99% and 95%, and the shortfall below is concentrated in the
-# interactive menu and in clipboard backends that cannot all execute on
-# one operating system. Chasing a single global percentage would mean
-# writing tests for the sake of the number.
-fail_under = 70
+# A floor, not a target, and deliberately below the current figure so an
+# unrelated change is never turned into a coverage exercise. What remains
+# uncovered is there for a reason: clipboard backends that cannot all
+# execute on one operating system, and the Windows console-colour paths,
+# which need a real terminal. Chasing the last few points would mean
+# writing tests for the number rather than for the risk.
+fail_under = 80
 show_missing = true
 
 # The package ships py.typed, so the annotations are a promise to anyone
