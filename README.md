@@ -203,10 +203,12 @@ review — every random draw is `secrets.choice`.
 
 | Check | What it covers |
 | --- | --- |
-| [Tests](tests/) | 111 tests on Linux, macOS, and Windows × Python 3.9–3.13. |
+| [Tests](tests/) | 356 tests on Linux, macOS, and Windows × Python 3.9–3.13. |
+| [Fuzzing](tests/fuzz/) | An Atheris harness drives `generate` and `generate_passphrase` with adversarial input on every push, asserting they either honor the contract exactly or raise `ValueError` — and that entropy is never *over*-stated, the direction that would call a weak secret strong. |
 | [Pester suite](contrib/tests/) | The [PowerShell script](contrib/new-password.ps1) is a second credential generator, so it gets its own bias and charset tests — including a parity check that its alphabet still matches the Python one. |
 | `mypy --strict` | Run for `linux`, `darwin`, *and* `win32`, so the Windows-only clipboard path is type-checked on every commit rather than only when someone runs it. |
 | [CodeQL](.github/workflows/codeql.yml) | GitHub's `security-extended` query suite; results are in the repository's Security tab. |
+| [Locked CI tooling](requirements/) | Every action is pinned by commit SHA and every `pip install` runs with `--require-hashes`, transitive dependencies included, so a substituted wheel cannot enter a build. Dependabot refreshes the pins, because a stale pin is still a stale dependency. |
 | [OpenSSF Scorecard](https://scorecard.dev/viewer/?uri=github.com/nathanramoscfa/password-key) | A third party scoring this repo's supply-chain posture — pinned actions, token scopes, release provenance — so the claim is not ours to make. |
 
 **What this does not have.** It is a young project with one maintainer
