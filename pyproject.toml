@@ -83,6 +83,11 @@ path = "src/password_key/__init__.py"
 include = [
     "src",
     "tests",
+    # tests/test_web_parity.py reads web/ directly, so the sdist has to
+    # carry it or a `pytest` run from an unpacked sdist fails on a file
+    # that was simply not shipped.
+    "web",
+    "tools",
     "README.md",
     "LICENSE",
     "THIRD-PARTY-NOTICES.md",
