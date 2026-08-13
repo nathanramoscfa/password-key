@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Belt for hosts that ignore web/_headers (e.g. GitHub Pages):
+     forbid every external request from inside the document itself. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; base-uri 'none'; form-action 'none'">
+<title>password-key</title>
+<meta name="description" content="Cryptographically secure passwords and diceware passphrases, generated entirely in your browser. No network calls, no analytics, open source.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%23e6a63d'/%3E%3Cg fill='%2312161b'%3E%3Ccircle cx='9.5' cy='9.5' r='3'/%3E%3Ccircle cx='22.5' cy='9.5' r='3'/%3E%3Ccircle cx='16' cy='16' r='3'/%3E%3Ccircle cx='9.5' cy='22.5' r='3'/%3E%3Ccircle cx='22.5' cy='22.5' r='3'/%3E%3C/g%3E%3C/svg%3E">
+<link rel="stylesheet" href="style.css">
+<script src="wordlist.js" defer></script>
+<script src="app.js" defer></script>
+</head>
+<body>
+
+<header class="masthead">
+  <a class="brand" href="./">
+    <svg class="die" width="21" height="21" viewBox="0 0 32 32" aria-hidden="true">
+      <rect x="1.5" y="1.5" width="29" height="29" rx="7" fill="none" stroke="currentColor" stroke-width="2.5"/>
+      <g fill="currentColor">
+        <circle cx="10" cy="10" r="2.7"/><circle cx="22" cy="10" r="2.7"/>
+        <circle cx="16" cy="16" r="2.7"/>
+        <circle cx="10" cy="22" r="2.7"/><circle cx="22" cy="22" r="2.7"/>
+      </g>
+    </svg>
+    <span>password-key</span>
+  </a>
+  <nav class="nav" aria-label="Project links">
+    <a href="https://github.com/nathanramoscfa/password-key">GitHub</a>
+    <a href="https://pypi.org/project/password-key/">PyPI</a>
+  </nav>
+</header>
+
+<main>
+
+<section class="hero">
+  <h1>Strong secrets, made on your machine.</h1>
+  <p class="lede">Every secret on this page is drawn from your browser&rsquo;s own
+  cryptographic random source and never leaves it. No network calls, no
+  analytics, no storage &mdash;
+  <a href="https://github.com/nathanramoscfa/password-key/tree/main/web">read the source</a>
+  and verify.</p>
+</section>
+
+<section class="tool" aria-label="Secret generator">
+  <div class="tabs" id="tablist" role="tablist" aria-label="Secret type">
+    <button id="tab-password" class="tab is-active" role="tab"
+            aria-selected="true" aria-controls="panel-password">Password</button>
+    <button id="tab-passphrase" class="tab" role="tab"
+            aria-selected="false" aria-controls="panel-passphrase">Passphrase</button>
+  </div>
+
+  <div class="secret-wrap" aria-live="polite">
+    <code id="secret" class="secret"></code>
+  </div>
+
+  <div class="actions">
+    <button id="copy" class="btn btn-primary">Copy</button>
+    <button id="regen" class="btn">
+      <svg id="die-glyph" class="die-glyph" width="14" height="14" viewBox="0 0 32 32" aria-hidden="true">
+        <rect x="2" y="2" width="28" height="28" rx="7" fill="none" stroke="currentColor" stroke-width="3"/>
+        <g fill="currentColor">
+          <circle cx="10.5" cy="10.5" r="3"/><circle cx="21.5" cy="10.5" r="3"/>
+          <circle cx="16" cy="16" r="3"/>
+          <circle cx="10.5" cy="21.5" r="3"/><circle cx="21.5" cy="21.5" r="3"/>
+        </g>
+      </svg>
+      Reroll
+    </button>
+  </div>
+
+  <div class="meter">
+    <div class="meter-read">
+      <span class="bits-figure" id="bits">0</span>
+      <span class="bits-unit">bits of entropy</span>
+      <span id="strength" class="pill">&mdash;</span>
+      <span id="detail" class="detail"></span>
+    </div>
+    <div class="gauge" role="img" aria-label="Entropy gauge, scaled 0 to 160 bits">
+      <div id="gauge-fill" class="gauge-fill"></div>
+      <span class="tick tick-fair"></span>
+      <span class="tick tick-strong"></span>
+      <span class="tick tick-excellent"></span>
+    </div>
+    <div class="gauge-scale" aria-hidden="true">
+      <span class="mark mark-fair">60 &middot; fair</span>
+      <span class="mark mark-strong">75 &middot; strong</span>
+      <span class="mark mark-excellent">128 &middot; excellent</span>
+    </div>
+  </div>
+
+  <fieldset id="panel-password" class="controls" role="tabpanel" aria-label="Password options">
+    <div class="control">
+      <label for="len-range">Length</label>
+      <div class="row">
+        <input type="range" id="len-range" min="4" max="64" value="32">
+        <input type="number" id="len-num" min="4" max="1024" value="32"
+               aria-label="Length, 4 to 1024">
+      </div>
+    </div>
+    <div class="control">
+      <label for="charset">Characters</label>
+      <select id="charset">
+        <option value="url-safe" selected>URL-safe &mdash; A&ndash;Z a&ndash;z 0&ndash;9 - _ . ~</option>
+        <option value="full">Full symbols &mdash; adds !#$%&amp;()*+,:;&lt;=&gt;?@[]^{|}</option>
+      </select>
+    </div>
+    <label class="check">
+      <input type="checkbox" id="no-ambiguous">
+      Skip look-alikes <span class="hint">0 O 1 l I |</span>
+    </label>
+    <label class="check">
+      <input type="checkbox" id="all-classes">
+      Require every class <span class="hint">upper &middot; lower &middot; digit &middot; symbol</span>
+    </label>
+  </fieldset>
+
+  <fieldset id="panel-passphrase" class="controls" role="tabpanel" aria-label="Passphrase options" hidden>
+    <div class="control">
+      <label for="words-range">Words</label>
+      <div class="row">
+        <input type="range" id="words-range" min="2" max="12" value="6">
+        <input type="number" id="words-num" min="1" max="40" value="6"
+               aria-label="Words, 1 to 40">
+      </div>
+    </div>
+    <div class="control">
+      <label for="separator">Separator</label>
+      <input type="text" id="separator" value="-" maxlength="8"
+             autocomplete="off" spellcheck="false">
+    </div>
+    <label class="check">
+      <input type="checkbox" id="capitalize">
+      Capitalize words
+    </label>
+  </fieldset>
+</section>
+
+<section class="prose">
+  <p class="eyebrow">How it&rsquo;s random</p>
+  <h2>The browser&rsquo;s CSPRNG, nothing less.</h2>
+  <p>Every draw comes from <code>crypto.getRandomValues</code> &mdash; the same
+  operating-system entropy source the
+  <a href="https://pypi.org/project/password-key/">Python package</a> reaches
+  through <code>secrets</code>. Selection uses rejection sampling, so no
+  character or word is ever more likely than another. <code>Math.random()</code>
+  appears nowhere on this page.</p>
+</section>
+
+<section class="prose">
+  <p class="eyebrow">The math</p>
+  <h2>Entropy, counted honestly.</h2>
+  <p>A 32-character URL-safe password carries about 193 bits &mdash; far beyond
+  any brute-force attack. A six-word passphrase from the EFF Large Wordlist
+  carries log&#8322;(7776) &asymp; 12.9 bits per word: 77.5 bits at six words,
+  enough to resist offline cracking on serious hardware, and far easier to type
+  on a phone or read over a call.</p>
+  <p>When <em>require every class</em> is on, the meter reports log&#8322; of
+  the accepted-string count by inclusion&ndash;exclusion, not the naive figure.
+  Composition rules make short passwords slightly <em>weaker</em>, and the
+  gauge says so.</p>
+</section>
+
+<section class="prose">
+  <p class="eyebrow">Local by construction</p>
+  <h2>Verifiable, not promised.</h2>
+  <p>The page ships a Content-Security-Policy that forbids every network
+  request &mdash; no fetch, no beacons, no third-party scripts, ever. The
+  wordlist is embedded, so the whole thing works offline: save the page, turn
+  your network off, and it still rolls. The same generator is a
+  zero-dependency Python package:</p>
+  <pre class="code">pip install password-key
+pwk              <span class="cmt"># 32-char URL-safe password &rarr; clipboard</span>
+pwk --words 7    <span class="cmt"># 7-word EFF passphrase</span></pre>
+</section>
+
+</main>
+
+<footer class="site-footer">
+  <p>MIT &copy; Nathan Ramos &middot;
+    <a href="https://github.com/nathanramoscfa/password-key">Source</a> &middot;
+    <a href="https://pypi.org/project/password-key/">PyPI</a></p>
+  <p>Passphrases use the <a href="https://www.eff.org/dice">EFF Large
+  Wordlist</a> (CC BY 3.0). Not affiliated with the EFF.</p>
+  <!-- Monetization slot: if this page ever carries revenue, it must be a
+       single disclosed affiliate TEXT link here — a static <a> with
+       rel="sponsored noopener", no third-party scripts, no trackers, no
+       pixels. Anything that executes remote code on this page has full DOM
+       access to the generated secret and breaks both the CSP and the
+       promise above. tests/test_web_parity.py fails the build if an
+       off-origin resource or a network API appears. -->
+</footer>
+
+</body>
+</html>

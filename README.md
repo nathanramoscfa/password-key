@@ -224,6 +224,22 @@ launches the interactive menu with a double-click. A standalone
 PowerShell implementation (no Python required) lives in
 [`contrib/new-password.ps1`](contrib/new-password.ps1).
 
+## In a browser
+
+The same generator runs as a static page in [`web/`](web/) — no build
+step, no framework, no dependencies. It is deployed at
+**[arcforgelabs.dev/key](https://arcforgelabs.dev/key)**, and it draws
+from `crypto.getRandomValues` (the browser's route to the same OS
+entropy `secrets` uses) with the same rejection sampling, the same
+charsets, and the same inclusion–exclusion entropy correction.
+
+It ships a Content-Security-Policy that forbids every outbound request,
+and the wordlist is embedded, so the page works offline and sends
+nothing anywhere. There are no analytics and no third-party scripts —
+[`tests/test_web_parity.py`](tests/test_web_parity.py) fails the build
+if a charset, bound, threshold, or the wordlist ever drifts from this
+package, or if a network call or `Math.random` appears.
+
 ## Contributing
 
 Issues and PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md).

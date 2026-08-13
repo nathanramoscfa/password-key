@@ -4,6 +4,36 @@ All notable changes to this project are documented here. The format is
 based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [Unreleased]
+
+### Added
+
+- **A browser build of the generator** in `web/` — a static page with no
+  build step, no framework, and no dependencies, deployed at
+  [arcforgelabs.dev/key](https://arcforgelabs.dev/key). Randomness comes
+  from `crypto.getRandomValues` with the same rejection sampling as
+  `secrets.choice`, and the charsets, bounds, strength thresholds, and
+  the inclusion–exclusion entropy correction are ports of
+  `generator.py` and `passphrase.py`. The page ships a CSP that forbids
+  every outbound request and embeds the wordlist, so it works offline
+  and sends nothing anywhere.
+- **`tests/test_web_parity.py`**, which compares the port's constants
+  against the real Python objects rather than against a second copy of
+  the expected values. Two implementations of one generator drift
+  silently — nothing crashes when a charset loses a character — so the
+  charsets, length bounds, wordlist size, strength thresholds, and the
+  full wordlist are asserted equal, along with the absence of
+  `Math.random` and of any network API.
+- **`tools/build_web_wordlist.py`**, the only writer of
+  `web/wordlist.js`. It re-reads the bundled EFF list, verifies the
+  pinned SHA-256 before emitting anything, and refuses to build
+  otherwise.
+
+### Changed
+
+- The sdist now includes `web/` and `tools/`, so a `pytest` run from an
+  unpacked sdist does not fail on files that were simply not shipped.
+
 ## [1.1.2] - 2026-08-12
 
 Test-only release. No behavior change.
