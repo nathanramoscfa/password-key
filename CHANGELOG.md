@@ -10,7 +10,7 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 - **A browser build of the generator** in `web/` — a static page with no
   build step, no framework, and no dependencies, deployed at
-  [arcforgelabs.dev/key](https://arcforgelabs.dev/key). Randomness comes
+  [key.arcforgelabs.dev](https://key.arcforgelabs.dev). Randomness comes
   from `crypto.getRandomValues` with the same rejection sampling as
   `secrets.choice`, and the charsets, bounds, strength thresholds, and
   the inclusion–exclusion entropy correction are ports of

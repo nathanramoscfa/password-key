@@ -228,7 +228,7 @@ PowerShell implementation (no Python required) lives in
 
 The same generator runs as a static page in [`web/`](web/) — no build
 step, no framework, no dependencies. It is deployed at
-**[arcforgelabs.dev/key](https://arcforgelabs.dev/key)**, and it draws
+**[key.arcforgelabs.dev](https://key.arcforgelabs.dev)**, and it draws
 from `crypto.getRandomValues` (the browser's route to the same OS
 entropy `secrets` uses) with the same rejection sampling, the same
 charsets, and the same inclusion–exclusion entropy correction.

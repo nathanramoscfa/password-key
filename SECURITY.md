@@ -10,8 +10,9 @@ is supported with security fixes.
 Please **do not open a public issue** for security problems. Instead, use
 GitHub's private reporting:
 [Report a vulnerability](https://github.com/nathanramoscfa/password-key/security/advisories/new),
-or email **security@arcforgelabs.dev** with `[password-key security]` in the
-subject line.
+or email **hello@arcforgelabs.dev** with `[password-key security]` in the
+subject line — the contact published in
+[arcforgelabs.dev/.well-known/security.txt](https://arcforgelabs.dev/.well-known/security.txt).
 
 You can expect an acknowledgement within a few days. Fixes for confirmed
 issues are released as soon as they are ready, with credit to the reporter
