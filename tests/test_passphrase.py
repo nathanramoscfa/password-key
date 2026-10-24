@@ -1,6 +1,7 @@
 """Tests for password_key.passphrase."""
 
 import hashlib
+import itertools
 from importlib import resources
 
 import pytest
@@ -51,7 +52,7 @@ class TestWordlist:
         # No word is a prefix of another, so even separator="" keeps a
         # passphrase uniquely decodable and the entropy figure honest.
         words = sorted(load_wordlist())
-        for shorter, longer in zip(words, words[1:]):
+        for shorter, longer in itertools.pairwise(words):
             assert not longer.startswith(shorter), (
                 f"{shorter!r} is a prefix of {longer!r}"
             )
