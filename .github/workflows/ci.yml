@@ -125,16 +125,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        # ubuntu-latest is Ubuntu 26.04, which setup-python has no 3.9 build
-        # for. Keep testing the declared floor on 24.04 until requires-python
-        # moves past 3.9.
-        exclude:
-          - os: ubuntu-latest
-            python-version: "3.9"
-        include:
-          - os: ubuntu-24.04
-            python-version: "3.9"
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -143,7 +134,7 @@ jobs:
       - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
         with:
           python-version: ${{ matrix.python-version }}
-      # pytest only. The matrix spans 3.9-3.13, and the linters are not
+      # pytest only. The matrix spans 3.10-3.13, and the linters are not
       # used here — installing them would drag the whole toolchain's
       # Python floor onto every matrix leg for no benefit.
       - run: pip install --require-hashes -r requirements/test.txt

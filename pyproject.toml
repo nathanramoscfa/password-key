@@ -13,7 +13,7 @@ license = "MIT"
 # Both ship in the wheel — CC BY 3.0 requires the wordlist's attribution
 # to travel with the wordlist.
 license-files = ["LICENSE", "THIRD-PARTY-NOTICES.md"]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 authors = [
     { name = "ArcForge Digital Labs LLC" },
 ]
@@ -40,7 +40,6 @@ classifiers = [
     "Intended Audience :: System Administrators",
     "Operating System :: OS Independent",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
@@ -67,11 +66,7 @@ pwk = "password_key.cli:main"
 
 [project.optional-dependencies]
 dev = [
-    # Capped below 2.0 on purpose: mypy 2.x refuses `python_version =
-    # "3.9"` ("must be 3.10 or higher") and falls back silently, which
-    # would quietly stop checking the oldest Python this package claims
-    # to support. Lift the cap when requires-python moves past 3.9.
-    "mypy>=1.8,<2",
+    "mypy>=1.8",
     "pytest>=7.0",
     "ruff>=0.4",
 ]
@@ -119,13 +114,13 @@ show_missing = true
 # importing it. Strict mode is what makes that promise checkable in CI
 # rather than asserted in a README.
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 files = ["src/password_key"]
 strict = true
 
 [tool.ruff]
 line-length = 88
-target-version = "py39"
+target-version = "py310"
 src = ["src", "tests"]
 # Keep ruff off Markdown: README code blocks use aligned comments on purpose.
 extend-exclude = ["*.md"]

@@ -34,6 +34,16 @@ project adheres to [Semantic Versioning](https://semver.org/).
 - The sdist now includes `web/` and `tools/`, so a `pytest` run from an
   unpacked sdist does not fail on files that were simply not shipped.
 
+### Removed
+
+- **Python 3.9 support.** `requires-python` is now `>=3.10`: 3.9 reached
+  end of life in October 2025, and GitHub's current Ubuntu runners no
+  longer provide it. pip on 3.9 keeps resolving to 1.1.2, the last
+  release that supports it. With the floor at 3.10, mypy checks against
+  3.10 and is no longer capped below 2.0, ruff targets `py310`, and the
+  test lock drops its 3.9 branch, including the `pytest==8.4.2` pin that
+  carried the unpatchable tmpdir advisory.
+
 ## [1.1.2] - 2026-08-12
 
 Test-only release. No behavior change.
