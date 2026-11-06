@@ -9,14 +9,20 @@ project adheres to [Semantic Versioning](https://semver.org/).
 ### Added
 
 - **A browser build of the generator** in `web/` — a static page with no
-  build step, no framework, and no dependencies, deployed at
-  [key.arcforgelabs.dev](https://key.arcforgelabs.dev). Randomness comes
-  from `crypto.getRandomValues` with the same rejection sampling as
+  build step, no framework, and no dependencies. Randomness comes from
+  `crypto.getRandomValues` with the same rejection sampling as
   `secrets.choice`, and the charsets, bounds, strength thresholds, and
   the inclusion–exclusion entropy correction are ports of
   `generator.py` and `passphrase.py`. The page ships a CSP that forbids
   every outbound request and embeds the wordlist, so it works offline
   and sends nothing anywhere.
+- **Double-click browser launchers.** `New Password in Browser.bat`
+  (Windows) and `New Password in Browser.command` (macOS) open
+  `web/index.html` from the folder they sit in, with no server, no
+  listening port, and no network call. `tests/test_launchers.py` pins
+  the exact command in each, and reads the `.command` file's executable
+  bit and LF endings from the git index, because a Windows checkout
+  cannot be trusted to show either one.
 - **`tests/test_web_parity.py`**, which compares the port's constants
   against the real Python objects rather than against a second copy of
   the expected values. Two implementations of one generator drift
@@ -31,8 +37,9 @@ project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
-- The sdist now includes `web/` and `tools/`, so a `pytest` run from an
-  unpacked sdist does not fail on files that were simply not shipped.
+- The sdist now includes `web/`, `tools/`, and the browser launchers, so
+  a `pytest` run from an unpacked sdist does not fail on files that were
+  simply not shipped.
 
 ### Removed
 
