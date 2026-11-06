@@ -83,6 +83,9 @@ include = [
     # that was simply not shipped.
     "web",
     "tools",
+    # tests/test_launchers.py reads these, for the same reason.
+    "New Password in Browser.bat",
+    "New Password in Browser.command",
     "README.md",
     "LICENSE",
     "THIRD-PARTY-NOTICES.md",

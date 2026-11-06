@@ -204,7 +204,7 @@ review — every random draw is `secrets.choice`.
 
 | Check | What it covers |
 | --- | --- |
-| [Tests](tests/) | 378 tests on Linux, macOS, and Windows × Python 3.10–3.13, at 87% branch coverage with a floor enforced in CI. |
+| [Tests](tests/) | 408 tests on Linux, macOS, and Windows × Python 3.10–3.13, at 87% branch coverage with a floor enforced in CI. |
 | [Fuzzing](tests/fuzz/) | An Atheris harness drives `generate` and `generate_passphrase` with adversarial input on every push, asserting they either honor the contract exactly or raise `ValueError` — and that entropy is never *over*-stated, the direction that would call a weak secret strong. |
 | [Pester suite](contrib/tests/) | The [PowerShell script](contrib/new-password.ps1) is a second credential generator, so it gets its own bias and charset tests — including a parity check that its alphabet still matches the Python one. |
 | `mypy --strict` | Run for `linux`, `darwin`, *and* `win32`, so the Windows-only clipboard path is type-checked on every commit rather than only when someone runs it. |
@@ -217,21 +217,59 @@ and no independent security audit. The checks above are automated ones;
 none of them is a human expert reading the code adversarially. Judge it
 on the source, which is the point of keeping it this small.
 
-## Windows double-click launcher
+## Double-click launchers
 
-Prefer not to open a terminal? [`New Password.bat`](New%20Password.bat)
-launches the interactive menu with a double-click. A standalone
-PowerShell implementation (no Python required) lives in
+Prefer not to open a terminal? Three launchers sit at the top of this
+repository, so they need a copy of it rather than a `pip install`:
+
+| Launcher | System | What it opens |
+| --- | --- | --- |
+| [`New Password.bat`](New%20Password.bat) | Windows | The interactive menu, in a console. It uses the installed `password-key`, then this checkout through `py`, then the standalone PowerShell generator. |
+| [`New Password in Browser.bat`](New%20Password%20in%20Browser.bat) | Windows | [`web/index.html`](web/index.html) in your default browser. |
+| [`New Password in Browser.command`](New%20Password%20in%20Browser.command) | macOS | The same page in your default browser. macOS runs the file in Terminal, so a Terminal window may stay open; it is safe to close. |
+
+The browser launchers start no server and make no network call: each
+one hands a file to your browser and exits. The standalone PowerShell
+implementation (no Python required) lives in
 [`contrib/new-password.ps1`](contrib/new-password.ps1).
+
+### If a downloaded launcher is blocked
+
+A `git clone` is not affected. A ZIP downloaded in a browser is: the
+operating system marks the download, the mark carries over to the
+extracted files, and these launchers are not signed. Prompts vary with
+the OS version and security settings; this is what macOS 27 and
+Windows 11 do.
+
+- **macOS.** Gatekeeper refuses to run
+  `New Password in Browser.command`, and the page does not open. Apple
+  describes the override in
+  [Open a Mac app from an unknown developer](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unknown-developer-mh40616/mac):
+  **System Settings > Privacy & Security > Open Anyway**.
+- **Windows.** Both `.bat` files stop at an **Open File - Security
+  Warning** saying the publisher could not be verified. **Run**
+  continues and **Cancel** stops. The warning comes back on every launch
+  until you clear the mark in PowerShell:
+  `Unblock-File '.\New Password in Browser.bat'`.
+
+Read a launcher before you approve it; each browser launcher is four
+lines. If one stays blocked, open `web/index.html` directly. It is a
+page rather than a program, and it opens with no warning on both
+systems.
 
 ## In a browser
 
 The same generator runs as a static page in [`web/`](web/) — no build
-step, no framework, no dependencies. It is deployed at
-**[key.arcforgelabs.dev](https://key.arcforgelabs.dev)**, and it draws
-from `crypto.getRandomValues` (the browser's route to the same OS
-entropy `secrets` uses) with the same rejection sampling, the same
-charsets, and the same inclusion–exclusion entropy correction.
+step, no framework, no dependencies, and no server. There is no hosted
+copy: open [`web/index.html`](web/index.html) from your own files, or
+use a [launcher](#double-click-launchers). `pip install` does not
+include the page, so you need a `git clone` or the
+[ZIP download](https://github.com/nathanramoscfa/password-key/archive/refs/heads/main.zip).
+The sdist carries it too, from the first release after 1.1.2.
+
+The page draws from `crypto.getRandomValues` (the browser's route to the
+same OS entropy `secrets` uses) with the same rejection sampling, the
+same charsets, and the same inclusion–exclusion entropy correction.
 
 It ships a Content-Security-Policy that forbids every outbound request,
 and the wordlist is embedded, so the page works offline and sends
